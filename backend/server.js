@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const axios = require('axios');
 
-// Express app - MUST be declared before using app
 const app = express();
 
 // Middleware
@@ -27,7 +27,33 @@ app.use('/login', loginRoute);       // POST /login
 app.use('/register', registerRoute); // POST /register
 app.use('/search', searchRoute);     // POST /search
 
-// Root test route (optional)
+// 🔍 New: SERP API Route
+app.post('/fetch', async (req, res) => {
+  const { keyword, location, limit } = req.body;
+
+  if (!keyword || !location || !limit) {
+    return res.status(400).json({ success: false, message: 'Missing fields' });
+  }
+
+  try {
+    const response = await axios.get('https://serpapi.com/search.json', {
+      params: {
+        engine: 'google_maps',
+        q: `${keyword} in ${location}`,
+        api_key: process.env.API_KEY,
+      }
+    });
+
+    const results = response.data.local_results || [];
+    res.json({ success: true, data: results.slice(0, parseInt(limit)) });
+
+  } catch (error) {
+    console.error('🔴 SERP API Error:', error.message);
+    res.status(500).json({ success: false, message: 'Error fetching data' });
+  }
+});
+
+// Root route (optional)
 app.get('/', (req, res) => {
   res.send('🚀 API Scraper Backend is Running!');
 });
