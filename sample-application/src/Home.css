@@ -1,0 +1,154 @@
+
+.custom-navbar {
+  background-color: transparent;
+  box-shadow: none;
+  position:absolute;
+  z-index: 100;
+}
+.link-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  margin-right: 25px;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+  color: #ddd;
+}
+.navbar-nav .nav-link {
+  color: white !important;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffffff !important;
+  text-decoration: underline; /* Optional for hover effect */
+}
+
+.navbar-nav .nav-link {
+  margin-right: 30px;
+  font-weight: 500;
+  color: white;
+}
+.navbar-brand {
+  font-size: 25px;
+  color:white;
+}
+.nav-item:hover{
+  color:white;
+text-decoration: underline;
+
+}
+.btn-outline{
+    color:white;
+    padding:30px;
+}
+
+.btn-primary {
+  background-color: white;
+  color: #007bff;;
+  border: none;
+  height:35px;
+  margin-top: 25px;
+  border-radius: 20px;
+}
+.homepage-container {
+  font-family: 'Segoe UI', sans-serif;
+  width:100%;
+}
+.inputbox{
+    position: absolute;
+
+}
+.search-btn{
+    margin-top: 0;
+    background-color: rgb(107, 245, 107);
+    padding-bottom:10px;
+    color:white;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    text-align: center;
+}
+.search-btn:hover{
+    background-color: rgb(101, 237, 101);
+    color:white;
+}
+
+.hero {
+  background-image: linear-gradient(-152deg, #6937EA 0%, #377FEA 65%);
+  color: white; /* Optional: ensures text is readable */
+  padding: 100px 0;
+}
+.display-4{
+font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+.lead{
+    font-family:"Lato", "Helvetica Neue", Arial, sans-serif;
+}
+.hero h1 {
+  font-size: 3rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+}
+
+.features h4 {
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+.features p {
+  color: #555;
+}
+
+.footer {
+  font-size: 0.9rem;
+}
+/* Home.css */
+.homepage-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Optional for full screen height */
+.hero {
+  min-height: 100vh;
+  background-color: #007bff; /* Blue background */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Optional: Remove extra padding from Bootstrap container-fluid */
+.container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
+.modal-content {
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
