@@ -47,7 +47,7 @@ const Home = () => {
 
     try {
       // Step 1: Check permission first
-      const permissionRes = await fetch('http://localhost:5000/search', {
+      const permissionRes = await fetch('https://thoughtiv-apiproject.onrender.com/search', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -77,7 +77,7 @@ const Home = () => {
       }
 
       // Step 2: If allowed, fetch actual search results
-      const res = await fetch('http://localhost:5000/fetch', {
+      const res = await fetch('https://thoughtiv-apiproject.onrender.com/fetch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ keyword, location: place, limit, device_id }),
