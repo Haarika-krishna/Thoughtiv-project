@@ -16,46 +16,46 @@ const Register = ({ onSuccess }) => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  const device_id = getCookie('device_id');
+    e.preventDefault();
+    const device_id = getCookie('device_id');
 
-  if (!device_id) {
-    setErrorMsg('Device ID missing. Please refresh the page.');
-    return;
-  }
-
-  try {
-    const res = await fetch('https://thoughtiv-project.onrender.com/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, device_id }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      setSuccessMsg('Registered Successfully!');
-      setErrorMsg('');
-      setTimeout(() => {
-        setSuccessMsg('');
-        onSuccess(); // close modal
-      }, 2000);
-    } else {
-      setErrorMsg(data.message || 'Registration failed');
+    if (!device_id) {
+      setErrorMsg('Device ID missing. Please refresh the page.');
+      return;
     }
-  } catch (err) {
-    console.error('Registration error:', err);
-    setErrorMsg('Something went wrong');
-  }
-};
 
-{errorMsg && <MessageBox type="error" message={errorMsg} />}
-{successMsg && <MessageBox type="success" message={successMsg} />}
+    try {
+      const res = await fetch('http://localhost:5000/register', {  // ✅ Update if using local
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, device_id }),
+      });
 
+      const data = await res.json();
+
+      if (data.success) {
+        setSuccessMsg('Registered Successfully!');
+        setErrorMsg('');
+        setTimeout(() => {
+          setSuccessMsg('');
+          onSuccess();
+        }, 2000);
+      } else {
+        setErrorMsg(data.message || 'Registration failed');
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      setErrorMsg('Something went wrong');
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
       <h5 className="mb-3">Register</h5>
+
+      {errorMsg && <MessageBox type="error" message={errorMsg} />}
+      {successMsg && <MessageBox type="success" message={successMsg} />}
+
       <input
         type="text"
         name="name"
@@ -83,7 +83,9 @@ const Register = ({ onSuccess }) => {
         onChange={handleChange}
         required
       />
-      <button type="submit" className="btn btn-primary w-100">Register</button>
+      <button type="submit" className="btn btn-primary w-100">
+        Register
+      </button>
     </form>
   );
 };

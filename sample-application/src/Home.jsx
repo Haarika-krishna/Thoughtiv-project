@@ -16,88 +16,88 @@ const Home = () => {
   const [results, setResults] = useState([]);
   const [error, setError] = useState('');
   const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
-const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
+  const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
   const navigate = useNavigate();
 
-  // Cookie helpers
   const getCookie = (name) => {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   };
 
   const setCookie = (name, value, years) => {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() + years);
-  document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
-};
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + years);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  };
 
-useEffect(() => {
-  let deviceId = getCookie('device_id');
-  if (!deviceId) {
-    deviceId = `device-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    setCookie('device_id', deviceId, 10); // Persist for 10 years
-  }
-}, []);
-
+  useEffect(() => {
+    let deviceId = getCookie('device_id');
+    if (!deviceId) {
+      deviceId = `device-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      setCookie('device_id', deviceId, 10);
+    }
+  }, []);
 
   const handleSearch = async () => {
-  setLoading(true);
-  setError('');
-  setResults([]);
+    setLoading(true);
+    setError('');
+    setResults([]);
 
-  const device_id = getCookie('device_id');
+    const device_id = getCookie('device_id');
 
-  try {
-    // 1. Check permission first
-    const permissionRes = await fetch('http://localhost:5000/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ device_id }),
-    });
-
-    const permissionData = await permissionRes.json();
-    console.log("Permission Response:", permissionRes); 
-   
-  if (!permissionData.success) {
-  const msg = permissionData.message || "";
-
-  if (msg.toLowerCase().includes('register')) {
-    setShowRegisterPrompt(true);
-  } else if (msg.toLowerCase().includes('premium')) {
-    setShowPremiumPrompt(true);
-  } else {
-    setError(msg || 'Unknown error occurred');
-  }
-
-  setLoading(false);
-  return;
-}
+    try {
+      // Step 1: Check permission first
+      const permissionRes = await fetch('http://localhost:5000/search', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    device_id,
+    keyword,
+    location: place,
+    limit
+  }),
+});
 
 
+      const permissionData = await permissionRes.json();
 
+      if (!permissionData.success) {
+        const msg = permissionData.message || '';
 
-    // 2. If allowed, fetch actual search results
-    const res = await fetch('http://localhost:5000/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ keyword, location: place, limit, device_id }),
-    });
+        if (msg.toLowerCase().includes('register')) {
+          setShowRegisterPrompt(true);
+        } else if (msg.toLowerCase().includes('premium')) {
+          setShowPremiumPrompt(true);
+        } else {
+          setError(msg || 'Unknown error occurred');
+        }
 
-    const data = await res.json();
+        setLoading(false);
+        return;
+      }
 
-    if (data.success) {
-      setResults(data.data || []);
-    } else {
-      setError(data.message || 'Search failed');
+      // Step 2: If allowed, fetch actual search results
+      const res = await fetch('http://localhost:5000/fetch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword, location: place, limit, device_id }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setResults(data.data || []);
+      } else {
+        setError(data.message || 'Search failed');
+      }
+
+    } catch (err) {
+      console.error('Search error:', err);
+      setError('Something went wrong while searching.');
     }
 
-  } catch (err) {
-    console.error('Search error:', err);
-    setError('Something went wrong while searching.');
-  }
-
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
   return (
     <>
@@ -180,7 +180,7 @@ useEffect(() => {
         </footer>
       </div>
 
-      {/* Register Modal */}
+      {/* Modals */}
       {showRegister && (
         <div className="modal show fade d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowRegister(false)}>
           <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
@@ -201,7 +201,6 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Login Modal */}
       {showLogin && (
         <div className="modal show fade d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowLogin(false)}>
           <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
@@ -225,7 +224,6 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Success Popups */}
       {showLoginSuccess && (
         <div className="modal show fade d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-dialog-centered">
@@ -252,38 +250,55 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Register Prompt Modal */}
+     {/* Register Prompt Modal */}
 {showRegisterPrompt && (
-  <div className="modal show fade d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowRegisterPrompt(false)}>
+  <div
+    className="modal show fade d-block"
+    tabIndex="-1"
+    style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+    onClick={() => setShowRegisterPrompt(false)}
+  >
     <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-      <div className="modal-content text-center p-4">
-        <h5>Please register to continue</h5>
-        <p>You have used your 1 free search. Register to continue.</p>
-        <button className="btn btn-primary" onClick={() => {
-          setShowRegisterPrompt(false);
-          setShowRegister(true);
-        }}>Register Now</button>
+      <div className="modal-content p-4 rounded-4 shadow-lg border-0" style={{ background: '#ffffff' }}>
+        <div className="modal-header border-0">
+          <h5 className="modal-title w-100 text-center fw-semibold" style={{ color: '#333' }}>
+            🚀 Unlock More Searches
+          </h5>
+        </div>
+        <div className="modal-body text-center">
+          <p className="text-muted">You've used your 1 free search.</p>
+          <p className="fw-medium">Register now to continue using our service!</p>
+          <button
+            className="btn btn-primary px-4 py-2 rounded-pill mt-3"
+            onClick={() => {
+              setShowRegisterPrompt(false);
+              setShowRegister(true);
+            }}
+          >
+            Register Now
+          </button>
+        </div>
       </div>
     </div>
   </div>
 )}
 
-{/* Premium Prompt Modal */}
-{showPremiumPrompt && (
-  <div className="modal show fade d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowPremiumPrompt(false)}>
-    <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-      <div className="modal-content text-center p-4">
-        <h5>Upgrade to Premium</h5>
-        <p>You’ve used your free search limit. Unlock unlimited access by upgrading to premium.</p>
-        <button className="btn btn-warning" onClick={() => {
-          setShowPremiumPrompt(false);
-          navigate('/pricing'); // or open a payment modal
-        }}>Upgrade Now</button>
-      </div>
-    </div>
-  </div>
-)}
 
+      {/* Premium Prompt Modal */}
+      {showPremiumPrompt && (
+        <div className="modal show fade d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowPremiumPrompt(false)}>
+          <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content text-center p-4">
+              <h5>Upgrade to Premium</h5>
+              <p>You’ve used your free search limit. Unlock unlimited access by upgrading to premium.</p>
+              <button className="btn btn-warning" onClick={() => {
+                setShowPremiumPrompt(false);
+                navigate('/pricing');
+              }}>Upgrade Now</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
