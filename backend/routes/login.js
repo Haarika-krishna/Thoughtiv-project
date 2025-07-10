@@ -18,7 +18,12 @@ router.post('/', async (req, res) => {
       return res.json({ success: false, message: 'Incorrect password' });
     }
 
-    // Remove password before sending user data
+    // ✅ Check if email is verified
+    if (!users.user.verified) {
+      return res.json({ success: false, message: 'Please verify your email before logging in' });
+    }
+
+    // ✅ Remove password before sending user data
     const userCopy = { ...users._doc };
     delete userCopy.user.password;
 

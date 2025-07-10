@@ -9,7 +9,8 @@ const userSchema = new mongoose.Schema({
     name: String,
     password: String,
     email: String,
-    is_premium: { type: Boolean, default: false }
+    is_premium: { type: Boolean, default: false },
+    verified: { type: Boolean, default: false } 
   }
 });
 

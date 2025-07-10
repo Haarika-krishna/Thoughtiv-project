@@ -25,7 +25,7 @@ const Register = ({ onSuccess }) => {
     }
 
     try {
-      const res = await fetch('https://thoughtiv-apiproject.onrender.com/register', {  // ✅ Update if using local
+      const res = await fetch('http://localhost:5000/register', {  // ✅ Update if using local
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, device_id }),
@@ -83,7 +83,7 @@ const Register = ({ onSuccess }) => {
         onChange={handleChange}
         required
       />
-      <button type="submit" className="btn btn-primary w-100">
+      <button type="submit" className="btn btn-primary w-50">
         Register
       </button>
     </form>
