@@ -1,16 +1,41 @@
-const puppeteer = require('puppeteer'); // ✅ Full Puppeteer (includes Chromium)
+const puppeteer = require('puppeteer');
 const puppeteerExtra = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 
+// Configure for Render
 puppeteerExtra.use(StealthPlugin());
-puppeteerExtra.puppeteer = puppeteer; // ✅ Important for Render
+puppeteerExtra.puppeteer = puppeteer;
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Determine Chrome executable path for different environments
+function getChromePath() {
+  // Priority order:
+  // 1. Render's environment variable
+  // 2. Common Render path
+  // 3. Local development paths
+  return process.env.PUPPETEER_EXECUTABLE_PATH || 
+         '/usr/bin/chromium-browser' ||  // Default Render path
+         puppeteer.executablePath();     // Fallback to Puppeteer's default
+}
+
 async function scrapeGoogleMaps(keyword, location, limit = 10) {
+  // Enhanced browser launch configuration for Render
   const browser = await puppeteerExtra.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1600,1200']
+    headless: 'new', // Use new Headless mode
+    executablePath: getChromePath(),
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',        // Important for Docker/container environments
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',               // Reduces memory usage
+      '--disable-gpu',
+      '--window-size=1600,1200'
+    ],
+    ignoreHTTPSErrors: true
   });
 
   const page = await browser.newPage();
@@ -19,7 +44,10 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
 
   try {
     console.log("🚀 Launching Google Maps...");
-    await page.goto('https://www.google.com/maps', { waitUntil: 'networkidle2', timeout: 60000 });
+    await page.goto('https://www.google.com/maps', { 
+      waitUntil: 'networkidle2', 
+      timeout: 60000 
+    });
 
     await page.type('#searchboxinput', `${keyword} in ${location}`, { delay: 100 });
     await Promise.all([
@@ -106,7 +134,7 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
     console.error("🔥 Scraping failed:", err.message);
     return [];
   } finally {
-    await browser.close();
+    if (browser) await browser.close();
     console.log("🛑 Browser closed");
   }
 }
