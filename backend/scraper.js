@@ -1,11 +1,13 @@
-const puppeteer = require('puppeteer-extra');
+const puppeteer = require('puppeteer');
+const puppeteerExtra = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-puppeteer.use(StealthPlugin());
+
+puppeteerExtra.use(StealthPlugin());
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function scrapeGoogleMaps(keyword, location, limit = 10) {
-  const browser = await puppeteer.launch({
+  const browser = await puppeteerExtra.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1600,1200']
   });
