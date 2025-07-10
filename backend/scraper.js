@@ -1,31 +1,32 @@
-const puppeteer = require('puppeteer'); // Full Puppeteer with Chromium
+const puppeteer = require('puppeteer');
 const puppeteerExtra = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 
 puppeteerExtra.use(StealthPlugin());
-puppeteerExtra.puppeteer = puppeteer; // Important for Render
+puppeteerExtra.puppeteer = puppeteer; // ✅ Ensure it uses full Puppeteer with Chromium
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function scrapeGoogleMaps(keyword, location, limit = 10) {
   const browser = await puppeteerExtra.launch({
     headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process',
-      '--disable-gpu',
-      '--window-size=1600,1200'
-    ]
+    args: [ '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-accelerated-2d-canvas',
+    '--no-first-run',
+    '--no-zygote',
+    '--single-process',
+    '--disable-gpu',
+    '--window-size=1600,1200']
   });
 
   const page = await browser.newPage();
   await page.setViewport({ width: 1600, height: 1200 });
-  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36');
+
+  await page.setUserAgent(
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+  );
 
   try {
     console.log("🚀 Launching Google Maps...");
@@ -43,18 +44,15 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
     const seenTitles = new Set();
     let retries = 0;
 
-    while (results.length < limit && retries < 30) {
+    while (results.length < limit && retries < 20) {
       const newData = await page.evaluate(() => {
         return Array.from(document.querySelectorAll('.Nv2PK')).map(el => {
           const title = el.querySelector('.qBF1Pd')?.innerText || 'No title';
           const address = Array.from(el.querySelectorAll('.W4Efsd span'))
             .map(span => span.innerText?.trim())
             .filter(text =>
-              text &&
-              text.length > 10 &&
-              !text.match(/^[₹$€¥]/) &&
-              !/^\d+(\.\d+)?$/.test(text) &&
-              text.includes(',')
+              text && text.length > 10 && !text.match(/^[₹$€¥]/) &&
+              !/^\d+(\.\d+)?$/.test(text) && text.includes(',')
             )
             .sort((a, b) => b.length - a.length)[0] || 'No address';
 
@@ -74,12 +72,13 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
 
       await page.evaluate(() => {
         const scrollable = document.querySelector('div[role="feed"]');
-        if (scrollable) scrollable.scrollBy(0, 800);
+        if (scrollable) scrollable.scrollBy(0, 500);
       });
-      await delay(1500);
+      await delay(2000);
       retries++;
     }
 
+    // extract phone numbers
     const cards = await page.$$('.Nv2PK');
     for (let i = 0; i < Math.min(limit, cards.length); i++) {
       try {
