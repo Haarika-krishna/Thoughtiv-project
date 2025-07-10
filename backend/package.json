@@ -21,7 +21,7 @@
     "mongoose": "^8.16.1",
     "nodemailer": "^7.0.4",
     "nodemon": "^3.1.10",
-    "puppeteer": "^24.12.1",
+     "puppeteer": "^21.3.8",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
   }

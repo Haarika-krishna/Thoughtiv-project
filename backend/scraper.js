@@ -1,8 +1,9 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer'); // ✅ Full Puppeteer (includes Chromium)
 const puppeteerExtra = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 
 puppeteerExtra.use(StealthPlugin());
+puppeteerExtra.puppeteer = puppeteer; // ✅ Important for Render
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -36,20 +37,19 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
       const newData = await page.evaluate(() => {
         return Array.from(document.querySelectorAll('.Nv2PK')).map(el => {
           const title = el.querySelector('.qBF1Pd')?.innerText || 'No title';
-          // Improved address selector with multiple fallbacks
-         const address = Array.from(el.querySelectorAll('.W4Efsd span'))
-         .map(span => span.innerText?.trim())
-           .filter(text =>
-       text &&
-       text.length > 10 &&                     // avoid short strings like "₹100" or "4.5"
-       !text.match(/^[₹$€¥]/) &&               // filter out price symbols
-       !/^\d+(\.\d+)?$/.test(text) &&          // filter out ratings like "4.5"
-       text.includes(',')                      // addresses usually have commas
-      )
-     .sort((a, b) => b.length - a.length)[0] || 'No address';
+          const address = Array.from(el.querySelectorAll('.W4Efsd span'))
+            .map(span => span.innerText?.trim())
+            .filter(text =>
+              text &&
+              text.length > 10 &&
+              !text.match(/^[₹$€¥]/) &&
+              !/^\d+(\.\d+)?$/.test(text) &&
+              text.includes(',')
+            )
+            .sort((a, b) => b.length - a.length)[0] || 'No address';
 
-            return { title, address };
-            });
+          return { title, address };
+        });
       });
 
       for (const item of newData) {
@@ -70,7 +70,6 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
       retries++;
     }
 
-    // Fill in phone numbers by clicking and extracting details
     const cards = await page.$$('.Nv2PK');
     for (let i = 0; i < Math.min(limit, cards.length); i++) {
       try {
@@ -80,13 +79,12 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
 
         const phone = await page.evaluate(() => {
           const raw = (
-           document.querySelector('[data-tooltip="Copy phone number"]')?.innerText ||
-           document.querySelector('.UsdlK')?.innerText ||
-        ''
-       );
-     return raw.replace(/^[^\d+]+/, '').trim() || 'No phone'; // removes leading symbols before +91 or number
-    });
-
+            document.querySelector('[data-tooltip="Copy phone number"]')?.innerText ||
+            document.querySelector('.UsdlK')?.innerText ||
+            ''
+          );
+          return raw.replace(/^[^\d+]+/, '').trim() || 'No phone';
+        });
 
         results[i].phone = phone;
 
