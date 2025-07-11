@@ -3,22 +3,24 @@ const puppeteerExtra = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 
 puppeteerExtra.use(StealthPlugin());
-puppeteerExtra.puppeteer = puppeteer; // ✅ Ensure it uses full Puppeteer with Chromium
+puppeteerExtra.puppeteer = puppeteer;
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function scrapeGoogleMaps(keyword, location, limit = 10) {
   const browser = await puppeteerExtra.launch({
     headless: true,
-    args: [ '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-accelerated-2d-canvas',
-    '--no-first-run',
-    '--no-zygote',
-    '--single-process',
-    '--disable-gpu',
-    '--window-size=1600,1200']
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+      '--disable-gpu',
+      '--window-size=1600,1200'
+    ]
   });
 
   const page = await browser.newPage();
@@ -48,11 +50,18 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
       const newData = await page.evaluate(() => {
         return Array.from(document.querySelectorAll('.Nv2PK')).map(el => {
           const title = el.querySelector('.qBF1Pd')?.innerText || 'No title';
-          const address = Array.from(el.querySelectorAll('.W4Efsd span'))
+
+          const address = Array.from(el.querySelectorAll('.W4Efsd span span'))
             .map(span => span.innerText?.trim())
             .filter(text =>
-              text && text.length > 10 && !text.match(/^[₹$€¥]/) &&
-              !/^\d+(\.\d+)?$/.test(text) && text.includes(',')
+              text &&
+              text.length > 10 &&
+              text.includes(',') &&
+              text.split(',').length >= 2 &&
+              !text.match(/^[₹$€¥]/) &&
+              !text.match(/^Open|Closed|Opens|Closes|Hours|AM|PM/i) &&
+              !/^\d+(\.\d+)?$/.test(text) &&
+              text !== '·'
             )
             .sort((a, b) => b.length - a.length)[0] || 'No address';
 
@@ -78,13 +87,36 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
       retries++;
     }
 
-    // extract phone numbers
-    const cards = await page.$$('.Nv2PK');
-    for (let i = 0; i < Math.min(limit, cards.length); i++) {
+    // ✅ Extract phone numbers safely using title-matching
+    for (let i = 0; i < results.length; i++) {
       try {
-        await cards[i].click();
-        await page.waitForSelector('.DUwDvf', { timeout: 10000 });
-        await delay(1500);
+        const cards = await page.$$('.Nv2PK');
+        let targetCard = null;
+
+        for (const card of cards) {
+          const cardTitle = await card.$eval('.qBF1Pd', el => el.innerText.trim());
+          if (cardTitle === results[i].title) {
+            targetCard = card;
+            break;
+          }
+        }
+
+        if (!targetCard) {
+          console.log(`⚠️ Could not find matching card for: ${results[i].title}`);
+          results[i].phone = 'No phone';
+          continue;
+        }
+
+        const clickAndWait = async () => {
+          await targetCard.click();
+          await page.waitForSelector('.DUwDvf', { timeout: 10000 });
+          await delay(1500);
+        };
+
+        await Promise.race([
+          clickAndWait(),
+          delay(15000)
+        ]);
 
         const phone = await page.evaluate(() => {
           const raw = (
@@ -103,7 +135,7 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
           await delay(1000);
         }
       } catch (err) {
-        console.log(`⚠️ Failed to get phone for result ${i + 1}`);
+        console.log(`⚠️ Failed to get phone for ${results[i].title}`);
         results[i].phone = 'No phone';
       }
     }
@@ -114,8 +146,12 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
     console.error("🔥 Scraping failed:", err.message);
     return [];
   } finally {
-    await browser.close();
-    console.log("🛑 Browser closed");
+    try {
+      await browser.close();
+      console.log("🛑 Browser closed");
+    } catch (closeErr) {
+      console.error("❌ Failed to close browser:", closeErr.message);
+    }
   }
 }
 
