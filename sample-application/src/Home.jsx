@@ -50,7 +50,7 @@ const Home = () => {
       //https://thoughtiv-apiproject.onrender.com
       //https://thoughtiv-project-5.onrender.com
      // https://thoughtiv-project.onrender.com
-      const permissionRes = await fetch('https://thoughtiv-project-1.onrender.com/search', {
+      const permissionRes = await fetch('https://thoughtiv-project-2.onrender.com/search', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -80,7 +80,7 @@ const Home = () => {
       }
       //https://thoughtiv-project.onrender.com
       // Step 2: If allowed, fetch actual search results
-      const res = await fetch('https://thoughtiv-project-1.onrender.com/api/scrape', {
+      const res = await fetch('https://thoughtiv-project-2.onrender.com/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ keyword, location: place, limit, device_id }),
