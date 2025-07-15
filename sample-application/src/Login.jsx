@@ -17,7 +17,7 @@ const Login = ({ onSuccess }) => {
       }, {});
       const device_id = cookies.device_id;
 
-      const res = await fetch('http://localhost:5000/login', {
+      const res = await fetch('https://thoughtiv-project-1.onrender.com/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
