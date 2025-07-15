@@ -25,7 +25,7 @@ const Register = ({ onSuccess }) => {
     }
 //https://thoughtiv-project-5.onrender.com
     try {
-      const res = await fetch('https://thoughtiv-project.onrender.com/register', {  // ✅ Update if using local
+      const res = await fetch('http://localhost:5000/register', {  // ✅ Update if using local
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, device_id }),
