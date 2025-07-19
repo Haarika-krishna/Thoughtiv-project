@@ -80,7 +80,7 @@ const Home = () => {
       }
       //https://thoughtiv-project.onrender.com
       // Step 2: If allowed, fetch actual search results
-      const res = await fetch('https://thoughtiv-project.onrender.com/api/scrape', {
+      const res = await fetch('https://thoughtiv-project.onrender.comc/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ keyword, location: place, limit, device_id }),
