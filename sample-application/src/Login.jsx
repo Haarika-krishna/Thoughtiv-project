@@ -17,7 +17,7 @@ const Login = ({ onSuccess }) => {
       }, {});
       const device_id = cookies.device_id;
 
-      const res = await fetch('https://thoughtiv-project-1.onrender.com/login', {
+      const res = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,8 +28,8 @@ const Login = ({ onSuccess }) => {
       const data = await res.json();
 
       if (data.success) {
-        setShowSuccess(true);
-        setTimeout(() => {
+          setShowSuccess(true);
+          setTimeout(() => {
           setShowSuccess(false);
           onSuccess(); // Navigate to dashboard or close modal
         }, 2000);

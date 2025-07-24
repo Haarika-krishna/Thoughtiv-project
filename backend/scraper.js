@@ -9,6 +9,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function scrapeGoogleMaps(keyword, location, limit = 10) {
   const browser = await puppeteerExtra.launch({
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     headless: true,
     args: [
       '--no-sandbox',
@@ -145,12 +146,12 @@ async function scrapeGoogleMaps(keyword, location, limit = 10) {
   } catch (err) {
     console.error("🔥 Scraping failed:", err.message);
     return [];
-  } finally {
+  }finally {
     try {
       await browser.close();
       console.log("🛑 Browser closed");
     } catch (closeErr) {
-      console.error("❌ Failed to close browser:", closeErr.message);
+      console.error("❌ Failed to close browser:", closeErr);
     }
   }
 }
